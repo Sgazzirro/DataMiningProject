@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-
+from feature_extraction import extract_features
 
 def select_sensors(sensors):
     """
@@ -20,7 +20,7 @@ def select_sensors(sensors):
     return columns
 
 
-def create_time_series(dt_list, act_labels, trial_codes, actors, labeled=True):
+def create_time_series_speed_up(dt_list, act_labels, trial_codes, actors, labeled=True):
     """
     Args:
         dt_list: A list of columns that shows the type of data we want.
@@ -33,29 +33,20 @@ def create_time_series(dt_list, act_labels, trial_codes, actors, labeled=True):
         It returns a time-series of sensor data.
 
     """
-    if labeled:
-        dataset = np.zeros((0, (len(dt_list))+3))
-    else:
-        dataset = np.zeros((0, len(dt_list)))
+    dataset = pd.DataFrame()
+    information_columns = ["subject", "trial", "class"]
     for subject in actors:
         for activity_code in act_labels:
             for trial_code in trial_codes[activity_code]:
                 filename = '../LavorettiProvaDiMarco/A_DeviceMotion_data/'+activity_code+'_'+str(trial_code)+'/sub_'+str(int(subject))+'.csv'
                 raw_data = pd.read_csv(filename)
-                raw_data = raw_data.drop(['Unnamed: 0'], axis=1)
-                less_raw_data = np.zeros((len(raw_data), len(dt_list)))
+                raw_data = raw_data.drop(['Unnamed: 0', "attitude.pitch", "attitude.roll", "attitude.yaw", "gravity.x",
+                                          "gravity.y", "gravity.z"], axis=1)
+                data_collapsed = extract_features(raw_data, activity_code, 150)
                 informations = []
-                for index, sensor in enumerate(dt_list):
-                    less_raw_data[:, index] = raw_data[sensor].values
                 if labeled:
-                    informations.append([subject, trial_code, activity_code])
-                    informations = informations*len(less_raw_data)
-                less_raw_data = np.concatenate((less_raw_data,informations), axis=1)
-                dataset = np.append(dataset, less_raw_data, axis=0)
+                    data_collapsed["class"] = activity_code
+                dataset = pd.concat((dataset, data_collapsed), axis=0)
 
-    information_columns = ["subject", "trial", "class"]
-    total_columns = dt_list + information_columns
-    print(total_columns)
-    dataframe_format = pd.DataFrame(data=dataset, columns=total_columns)
+    dataframe_format = pd.DataFrame(data=dataset)
     return dataframe_format
-
