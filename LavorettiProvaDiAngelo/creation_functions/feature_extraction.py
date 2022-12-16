@@ -81,7 +81,7 @@ def collapse(df):
     return pd.concat([time_df, freq_df], axis=1)
 
 
-def extract_features(dataframe, class_name, sample_number):
+def extract_features(dataframe, sample_number):
     i = dataframe.shape[0]//sample_number
     j=0
     filtered_df=noise_filter(dataframe)
