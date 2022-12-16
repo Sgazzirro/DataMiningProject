@@ -42,3 +42,13 @@ def get_some_filter(complete_dataset, actors, act_labels):
     filtered_dataset = complete_dataset.loc[complete_dataset["subject"].isin(actors)]
     filtered_dataset = filtered_dataset.loc[filtered_dataset["class"].isin(act_labels)]
     return filtered_dataset
+
+
+def preprocessing(dataframe):
+    new_dataset = dataframe.loc[(dataframe["subject"] != 5) | (dataframe["trial"] != 13)]
+    only_numeric_dataset = new_dataset.drop(["trial", "subject"], axis=1)
+    corr_matrix = only_numeric_dataset.corr().abs()
+    upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+    to_drop = [column for column in upper.columns if any(upper[column] > 0.95)]
+    preprocessed_dataset = new_dataset.drop(to_drop, axis=1)
+    return preprocessed_dataset
