@@ -3,7 +3,7 @@ import numpy as np
 from feature_extraction import extract_features
 
 
-def create_time_series(labeled=True, mode="Collapsed"):
+def create_time_series(labeled=True, mode="Collapsed", num_samples=150):
     ACTIVITY_CODES = ["dws", "jog", "sit", "std", "ups", "wlk"]
 
     TRIAL_CODES = {
@@ -28,7 +28,7 @@ def create_time_series(labeled=True, mode="Collapsed"):
                 if mode == "raw":
                     data_collapsed = raw_data
                 else:
-                    data_collapsed = extract_features(raw_data, 150)
+                    data_collapsed = extract_features(raw_data, num_samples)
                 if labeled:
                     data_collapsed["class"] = activity_code
                     data_collapsed["subject"] = subject
